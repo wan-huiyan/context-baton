@@ -1,0 +1,7 @@
+{
+  "name": "context-baton",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Claude Code marketplace bundling session-handoff and successor-handoff — two skills for passing context across boundaries.",
+  "type": "module"
+}

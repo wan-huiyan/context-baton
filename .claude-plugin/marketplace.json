@@ -1,0 +1,22 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "wan-huiyan-context-baton",
+  "description": "Two skills for passing context across boundaries — session-handoff (end-of-session, agent→human) and successor-handoff (mid-run, agent→agent). Use together for work that outlives a single Claude context window.",
+  "owner": {
+    "name": "wan-huiyan"
+  },
+  "plugins": [
+    {
+      "name": "session-handoff",
+      "source": "./plugins/session-handoff",
+      "description": "End-of-session handoff with built-in cross-session consolidation. Captures knowledge, updates documentation, and prepares next-session prompts.",
+      "version": "1.3.0"
+    },
+    {
+      "name": "successor-handoff",
+      "source": "./plugins/successor-handoff",
+      "description": "Mid-run agent-to-agent handoff for long autonomous workflows. Lean parent orchestrator + file-first subagents + successor dispatch when context pressure rises.",
+      "version": "1.0.0"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "session-handoff",
+  "description": "End-of-session handoff with built-in cross-session consolidation. Captures knowledge, updates documentation, and prepares next-session prompts.",
+  "version": "1.3.0",
+  "author": {
+    "name": "Huiyan Wan"
+  },
+  "repository": "https://github.com/wan-huiyan/context-baton",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "claude-code-skill",
+    "handoff",
+    "session",
+    "context",
+    "continuity",
+    "memory"
+  ]
+}

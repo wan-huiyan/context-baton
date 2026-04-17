@@ -1,0 +1,22 @@
+{
+  "name": "successor-handoff",
+  "description": "Mid-run agent-to-agent handoff for long autonomous workflows. Lean parent orchestrator + file-first subagents + successor dispatch when context pressure rises.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Huiyan Wan"
+  },
+  "repository": "https://github.com/wan-huiyan/context-baton",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "claude-code-skill",
+    "handoff",
+    "successor",
+    "autonomous",
+    "overnight",
+    "subagent",
+    "orchestration",
+    "context",
+    "continuity"
+  ]
+}
