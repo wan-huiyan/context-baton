@@ -173,6 +173,20 @@ Don't try to finish the whole track yourself if you're feeling stretched. The co
 
 Notably **absent**: a "what I did" summary paragraph. Your successor reads files, not your closing message. Files should be sufficient — if they're not, the files are the thing to fix.
 
+### Why `checkpoint.md` is append-only (and why this matters)
+
+Every hop appends to `checkpoint.md`; no hop rewrites it. This is the mechanism that prevents information loss across a chain. Example across three hops of the same track:
+
+```markdown
+# checkpoint.md  (after hop 0, hop 1, hop 2)
+
+- [x] Shipped FLASK_TESTING K_SERVICE guard → PR #64 (+23/-4), tests 330→332   ← hop 0 wrote this
+- [x] Shipped OAuth domain allow-list → PR #65 (+18/-2), tests 332→333          ← hop 1 appended
+- [x] Shipped APP_SECRET fail-fast → PR #66 (+12/-5), tests 333→334             ← hop 2 appended
+```
+
+By hop 3, a fresh successor reading `checkpoint.md` sees all three entries — not just the most recent one. If you're tempted to replace this directory with a single "baton" markdown that only describes the immediately previous hop, don't: that's the anti-pattern called out in Red Flags, and it loses multi-hop history by design.
+
 ## Thresholds
 
 The event-count thresholds are heuristics, not constants. Tune them to your workload.
@@ -195,6 +209,7 @@ Log hop counts per track across runs. Adjust thresholds based on observed behavi
 - **Subagent answers its own questions from chat history.** Means it isn't using files as memory. It's heading for a context blowout. Remind it to read from disk.
 - **Successor re-runs a query that's already in `state/queries/`.** `pending.md` or `checkpoint.md` isn't being maintained. Fix the discipline, don't raise the cap.
 - **Narrative "what I did" summary in the handoff.** Files aren't doing their job. The state directory should be sufficient; if it isn't, that's the bug.
+- **Single-document baton instead of the state directory.** Hand-rolling `baton_hop_N.md` files that each describe "just completed (Hop N-1)" is an anti-pattern: information about earlier hops dissipates by hop 3. An A/B test on a 3-hop chain (2026-04-17) confirmed this — a Hop 3 agent given a Hop-3 baton that only cited Hop-2's work could not report on Hop 1's PR. The state directory avoids this by design: `checkpoint.md` accumulates, so every successor sees the full run.
 - **Parent dispatches a fourth successor hop.** Don't raise the cap. Stop and look at why — almost always poor track scoping or a growing `pending.md`.
 - **`pending.md` longer at hop K than at hop K-1.** The track is generating work faster than closing it. Successor-handoff won't save this; stop and re-scope.
 - **Subagent holds a giant query result in chat to reason about it.** Should write to disk, then re-read only the slice it needs.
