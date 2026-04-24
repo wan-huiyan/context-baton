@@ -46,11 +46,13 @@ cp -r /tmp/context-baton/plugins/successor-handoff ~/.claude/skills/successor-ha
 
 ### session-handoff
 
-End-of-session handoff that captures all knowledge, updates documentation, and prepares paste-ready prompts for the next session. Includes cross-session consolidation when multiple handoffs accumulate.
+End-of-session handoff that captures all knowledge, **dispatches session output across the canonical 7-bucket `docs/` taxonomy** (aligned with [memory-hygiene v3.1](https://github.com/wan-huiyan/memory-hygiene)), and prepares paste-ready prompts for the next session. Includes cross-session consolidation when multiple handoffs accumulate, and a mandatory **doc-freshness reverse-lint** verify step that catches stale normative guidance in project docs after this session's lessons.
+
+**v1.4+ buckets** — session artifacts are routed to `decisions/`, `runbooks/`, `analysis/`, `references/`, `reviews/`, `handoffs/`, `deliverables/` rather than dumped into a single handoff doc. Rich sessions touch 3-5 buckets simultaneously.
 
 ```
 You: /session-handoff
-Claude: [scans git log, writes handoff doc, updates memory, creates next-session prompt]
+Claude: [scans git log, dispatches to 7 buckets, runs reverse-lint, writes next-session prompt]
 
 You: wrap up this session
 Claude: [same — triggers on natural language too]
@@ -84,11 +86,12 @@ Use them in their lanes. They compose: a 10-hour autonomous run uses successor-h
 
 - **[planning-with-files](https://github.com/obra/superpowers)** — the file-as-memory foundation successor-handoff builds on.
 - **[subagent-driven-development](https://github.com/obra/superpowers)** — task-level subagent dispatch with review gates; composes with successor-handoff for track-level continuity.
-- **[memory-hygiene](https://github.com/wan-huiyan/memory-hygiene)** — keep persistent `MEMORY.md` tidy after handoffs accumulate.
+- **[memory-hygiene](https://github.com/wan-huiyan/memory-hygiene)** v3.1+ — source of truth for the 7-bucket `docs/` taxonomy session-handoff dispatches to. Also does deep memory cleanup and full `docs/` taxonomy audits/migrations.
+- **[doc-freshness-reverse-lint](https://github.com/wan-huiyan/claude-ecosystem-hygiene/tree/main/plugins/doc-freshness-reverse-lint)** — invoked automatically by session-handoff's Phase 4 verify step to catch stale normative guidance in project docs after lessons/feedback updates. Falls back gracefully if not installed.
 
 ## Versions
 
-- **session-handoff** — 1.3.0 (unchanged from standalone release)
+- **session-handoff** — 1.4.0 (synced from [standalone release](https://github.com/wan-huiyan/session-handoff): bucket-aware dispatch + doc-freshness reverse-lint, aligned with memory-hygiene v3.1 taxonomy)
 - **successor-handoff** — 1.0.0 (initial release, April 2026)
 
 ## License
