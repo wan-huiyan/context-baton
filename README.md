@@ -91,7 +91,7 @@ Use them in their lanes. They compose: a 10-hour autonomous run uses successor-h
 
 ## Versions
 
-- **session-handoff** — 1.4.0 (synced from [standalone release](https://github.com/wan-huiyan/session-handoff): bucket-aware dispatch + doc-freshness reverse-lint, aligned with memory-hygiene v3.1 taxonomy)
+- **session-handoff** — 1.7.0 (synced from [standalone release](https://github.com/wan-huiyan/session-handoff): bucket-aware dispatch + doc-freshness reverse-lint, aligned with memory-hygiene v3.1 taxonomy)
 - **successor-handoff** — 1.0.0 (initial release, April 2026)
 
 ## License
