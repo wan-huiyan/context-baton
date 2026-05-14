@@ -1,7 +1,7 @@
 ---
 name: session-handoff
-description: "End-of-session handoff that captures session knowledge, dispatches output across the canonical 7-bucket docs/ taxonomy (decisions/runbooks/analysis/references/reviews/handoffs/deliverables — aligned with memory-hygiene v3.1), triggers a doc-freshness reverse-lint to catch stale normative guidance, updates memory, and prepares next-session prompts. Use when: (1) user says 'wrap up', 'hand over', 'create handoff', 'end of session', 'write handoff', 'session handoff'; (2) non-trivial work session (3+ tasks) is ending; (3) context window is approaching limits; (4) user says 'consolidate', 'what's the current state', 'start here document' after parallel sessions; (5) the session produced artifacts that belong in more than one docs/ bucket (ADR + analysis + runbook + review). Includes cross-session consolidation when 3+ handoffs accumulate and a mandatory reverse-lint verify step against any lessons.md / feedback_*.md touched this session."
-version: 1.7.0
+description: "End-of-session handoff that captures session knowledge, dispatches output across the canonical 7-bucket docs/ taxonomy (decisions/runbooks/analysis/references/reviews/handoffs/deliverables — aligned with memory-hygiene v3.1), triggers a doc-freshness reverse-lint to catch stale normative guidance, updates memory, emits the future-to-do plan's follow-up items as GitHub issues, and prepares next-session prompts. Use when: (1) user says 'wrap up', 'hand over', 'create handoff', 'end of session', 'write handoff', 'session handoff'; (2) non-trivial work session (3+ tasks) is ending; (3) context window is approaching limits; (4) user says 'consolidate', 'what's the current state', 'start here document' after parallel sessions; (5) the session produced artifacts that belong in more than one docs/ bucket (ADR + analysis + runbook + review). Includes cross-session consolidation when 3+ handoffs accumulate and a mandatory reverse-lint verify step against any lessons.md / feedback_*.md touched this session."
+version: 1.8.0
 triggers:
   - "wrap up"
   - "session handoff"
@@ -15,7 +15,7 @@ triggers:
   - "start here document"
 ---
 
-# Session Handoff v1.6 — Bucket-aware + reverse-lint + auto-merge docs PRs
+# Session Handoff v1.8 — Bucket-aware + reverse-lint + auto-merge docs PRs + follow-up issue emission
 
 Comprehensive end-of-session knowledge capture with built-in cross-session
 consolidation. Ensures nothing is lost between sessions and produces a single
@@ -177,10 +177,14 @@ bucket output rather than duplicating its content.
     - If the artifact was generated (not hand-authored), add a `.provenance.md` sibling with
       source inputs, generation date, and regeneration command
 
-13. **Update future plan** -> `docs/plans/future_sessions_plan.md`
+13. **Update future plan + emit follow-up issues** -> `docs/plans/future_sessions_plan.md`
     - Mark completed items as DONE
     - Add new items discovered during session
     - Update status of in-progress items
+    - **Emit each new follow-up item as a GitHub issue** — see "Emitting follow-up
+      items as GitHub issues" at the end of this phase. A follow-up that lives
+      only as plan prose is a context leak: the next session has no actionable
+      breadcrumb and the item rots into a stale TODO.
 
 14. **Update roadmap** (if it exists)
 
@@ -192,6 +196,62 @@ bucket output rather than duplicating its content.
     - Add new memory files
     - Update lesson count
     - Add session reference
+
+#### Emitting follow-up items as GitHub issues
+
+This is the issue-filing half of step 13. The future-to-do plan's whole job is
+preserving context across sessions — but a follow-up that lives only as plan
+prose decays into a stale TODO, because the next session has no actionable
+breadcrumb. Filing each follow-up as a GitHub issue closes that loop.
+
+**Which items to emit:** the *new* follow-up items this session discovered and is
+*not* completing now — whatever the plan calls them (`Next steps`, `Follow-ups`,
+`Deferred`, `Open questions`). Skip items already marked DONE and items already
+tracked by an existing issue.
+
+**Default behavior — dry-run preview.** Do NOT file issues silently. For each
+follow-up item, draft a `gh issue create` payload and show the user the full
+command(s) for inspection first:
+
+```bash
+gh issue create \
+  --repo <owner>/<name> \
+  --title "<concise follow-up title>" \
+  --body "<why this matters + origin session/PR + file pointers>" \
+  --label "follow-up"        # optional — only if the label already exists in the repo
+```
+
+Present all drafted commands as one batch, then let the user approve, edit, or
+skip individual items. Run the approved `gh issue create` commands only after the
+user confirms. (If the user has explicitly asked for autonomous operation, you
+may file directly — but the dry-run preview is the default.)
+
+**Target repo resolution:**
+- If the user named a repo, use it (`--repo owner/name`).
+- Otherwise auto-detect from the current git remote:
+  `gh repo view --json nameWithOwner -q .nameWithOwner` (falls back to parsing
+  `git remote get-url origin`).
+- If neither resolves, skip issue emission — leave the items as plan text and
+  note "issue emission skipped: no target repo" in the handoff doc.
+
+**De-duplicate before filing.** For each drafted title, search the target repo's
+open issues so re-running the handoff on the same plan doesn't double-file:
+
+```bash
+gh issue list --repo <owner>/<name> --state open --search "<title keywords>" \
+  --json number,title
+```
+
+If a clear title match exists, drop that item from the batch and reference the
+existing issue number in the plan instead of filing a duplicate.
+
+**After filing:** annotate the corresponding plan item with its issue number
+(e.g. `- [ ] Track 2 engagement-width follow-up — #201`) so the plan and the
+issue tracker stay linked.
+
+**Graceful degradation:** if `gh` is not installed or not authenticated, skip
+issue emission, keep the follow-up items as plan text, and note "issue emission
+skipped: gh unavailable" in the handoff doc — never block the handoff on it.
 
 ### Phase 3: Prepare (next session)
 
@@ -442,6 +502,7 @@ the session didn't touch — don't fabricate entries.
 | `docs/handoffs/` | `session_N_handoff.md` + `session_N+1_prompt.md` (+ parallel prompts if any) |
 | `docs/deliverables/` | N new artifacts — or "—" |
 | `docs/plans/future_sessions_plan.md` | Updated / consolidated (if Phase 5) |
+| Follow-up issues | N drafted → M filed (#NNN…) / dry-run only / skipped (reason) — or "—" |
 | `memory/lessons.md` | N new (total: M) |
 | `memory/sessions_archive.md` | Updated — bucket footprint noted |
 | `MEMORY.md` index | Updated |
@@ -457,6 +518,9 @@ the session didn't touch — don't fabricate entries.
 - **Don't hardcode test counts or line counts** — they go stale immediately; use "as of PR #N" instead
 - **Don't skip the lessons scan** — debugging patterns are the most valuable long-term knowledge
 - **Don't write "see above" in next-session prompts** — they must be paste-ready with full context
+- **Don't leave follow-ups as plan-only text** — emit them as GitHub issues (step 13); an unfiled follow-up is a context leak the next session can't see
+- **Don't file follow-up issues silently** — dry-run preview is the default; show the `gh issue create` commands and get user approval first
+- **Don't double-file on re-run** — de-dup drafted titles against the repo's open issues before filing
 
 ## Tips
 
@@ -536,12 +600,13 @@ Decision supersession example (from consolidated plan):
 For consolidation: reads all existing handoff docs and validates against git/GitHub state.
 
 **Output:** Handoff doc, updated memory/lessons, next session prompt, sessions archive entry,
-ADRs, and optionally a consolidated plan. All files are committed and pushed.
+ADRs, optionally a consolidated plan, and (when the future-to-do plan has follow-up items)
+GitHub issues filed for them. All files are committed and pushed.
 
 ### Dependencies
 
 - Requires `git` for commit history and status
-- Requires `gh` CLI for PR status checks (gracefully degrades without it)
+- Requires `gh` CLI for PR status checks and follow-up issue emission (step 13) — gracefully degrades without it
 - Works with any project structure that uses `docs/` and `memory/` directories (creates them if missing)
 - **Optional (recommended):** `doc-freshness-reverse-lint` skill at
   `~/.claude/skills/doc-freshness-reverse-lint/scripts/reverse_lint.py` — if absent, Phase 4 step 24

@@ -48,11 +48,13 @@ cp -r /tmp/context-baton/plugins/successor-handoff ~/.claude/skills/successor-ha
 
 End-of-session handoff that captures all knowledge, **dispatches session output across the canonical 7-bucket `docs/` taxonomy** (aligned with [memory-hygiene v3.1](https://github.com/wan-huiyan/memory-hygiene)), and prepares paste-ready prompts for the next session. Includes cross-session consolidation when multiple handoffs accumulate, and a mandatory **doc-freshness reverse-lint** verify step that catches stale normative guidance in project docs after this session's lessons.
 
+**v1.8+ follow-up issue emission** — when the future-to-do plan picks up new follow-up items, the skill drafts `gh issue create` commands for them (dry-run preview by default), de-dups against the repo's open issues, and files them so the next session inherits a real breadcrumb instead of plan prose that rots.
+
 **v1.4+ buckets** — session artifacts are routed to `decisions/`, `runbooks/`, `analysis/`, `references/`, `reviews/`, `handoffs/`, `deliverables/` rather than dumped into a single handoff doc. Rich sessions touch 3-5 buckets simultaneously.
 
 ```
 You: /session-handoff
-Claude: [scans git log, dispatches to 7 buckets, runs reverse-lint, writes next-session prompt]
+Claude: [scans git log, dispatches to 7 buckets, runs reverse-lint, drafts follow-up issues, writes next-session prompt]
 
 You: wrap up this session
 Claude: [same — triggers on natural language too]
@@ -91,7 +93,7 @@ Use them in their lanes. They compose: a 10-hour autonomous run uses successor-h
 
 ## Versions
 
-- **session-handoff** — 1.7.0 (synced from [standalone release](https://github.com/wan-huiyan/session-handoff): bucket-aware dispatch + doc-freshness reverse-lint, aligned with memory-hygiene v3.1 taxonomy)
+- **session-handoff** — 1.8.0 (synced from [standalone release](https://github.com/wan-huiyan/session-handoff): bucket-aware dispatch + doc-freshness reverse-lint, aligned with memory-hygiene v3.1 taxonomy; v1.8 adds follow-up issue emission from the future-to-do plan)
 - **successor-handoff** — 1.0.0 (initial release, April 2026)
 
 ## License
