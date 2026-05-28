@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "wan-huiyan-context-baton",
-  "description": "Two skills for passing context across boundaries — session-handoff (end-of-session, agent→human) and successor-handoff (mid-run, agent→agent). Use together for work that outlives a single Claude context window.",
+  "description": "[DEPRECATED 2026-05-28] This bundle is no longer maintained. session-handoff has moved to wan-huiyan/session-handoff (current: v1.9). successor-handoff is frozen at v1.0.0. Install the standalone session-handoff marketplace instead.",
   "owner": {
     "name": "wan-huiyan"
   },
