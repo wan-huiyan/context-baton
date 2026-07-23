@@ -2,7 +2,7 @@
 
 > ⚠️ **This marketplace is deprecated as of 2026-05-28.**
 >
-> - **session-handoff** has moved to its dedicated home: **[wan-huiyan/session-handoff](https://github.com/wan-huiyan/session-handoff)** (current release: **v1.9**).
+> - **session-handoff** has moved to its dedicated home: **[wan-huiyan/session-handoff](https://github.com/wan-huiyan/session-handoff)** (current release: **v1.13**).
 > - **successor-handoff** is no longer maintained as a paired skill — Claude Code's own context handling has matured to the point where its mid-run agent→agent role is no longer load-bearing for typical workflows.
 >
 > **What to do:**
